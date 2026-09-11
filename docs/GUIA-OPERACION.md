@@ -116,6 +116,8 @@ Comprobaciones de arranque en `prod`: si faltan `APP_OTP_HMAC_SECRET`, `MAIL_HOS
 | 403 al enviar un formulario | Token CSRF caducado (sesión expirada) | Recargue la página e inicie sesión. |
 | Flyway: «Migration checksum mismatch» | Se editó una migración ya aplicada | Nunca edite migraciones aplicadas; cree `V2__...sql`. |
 | NetBeans compila con JDK 25 | Plataforma del proyecto distinta | Seleccione JDK 21 en *Propiedades del proyecto → Compilar*. |
+| NetBeans: `Could not find or load main class ${start-class}` | `pom.xml` sin la propiedad `start-class` | Actualice el repositorio y use *Reload Project*. |
+| `Port 8080 was already in use` | Otra instancia en ejecución | Deténgala (botón *Stop* en NetBeans) o cambie `APP_PORT`. |
 
 Registros: nivel `INFO` por defecto; nunca se registran contraseñas, códigos, tokens ni cuerpos de
 correo. Para diagnósticos temporales use `logging.level.com.mycompany.maildesk=DEBUG`.
