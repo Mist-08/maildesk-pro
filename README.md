@@ -123,6 +123,60 @@ adjuntos inválidos y cabeceras maliciosas; borradores, cola de salida y fallos 
 Prueba manual sugerida: alta inicial → invitar un usuario → redactar con adjunto y plantilla → enviar →
 ver estado en *Enviados* → detener el SMTP local y reintentar para ver el fallo controlado.
 
+### Dónde ver los correos en local
+
+En los perfiles `local` y `dev` **nada sale a Internet**: todos los correos (códigos de verificación,
+invitaciones, restablecimientos y los mensajes que redactes) van al SMTP local de pruebas. Puedes leerlos en:
+
+| Opción | Dónde aparecen |
+|---|---|
+| `scripts\start-dev-smtp.ps1` | En la consola donde lo ejecutaste y, además, en el archivo `data\correo-local.log` (se crea solo). Cada correo se imprime con *Para*, *Asunto* y el texto; el código de verificación es el número de 8 dígitos. |
+| `docker compose up -d mailpit` | Interfaz web en <http://localhost:8025>, con vista HTML, texto y adjuntos. |
+
+Si abres la aplicación y ves el aviso amarillo «Correo real pendiente de configuración», estás en este
+modo. Si al pedir un código aparece «No se pudo enviar el correo…», es que el SMTP local no está en marcha.
+
+### Probar con correo real (que los códigos lleguen a tu bandeja)
+
+1. Consigue credenciales SMTP de un proveedor. Ejemplo con **Gmail**: activa la verificación en dos pasos
+   en tu cuenta de Google y crea una *contraseña de aplicación* (Cuenta de Google → Seguridad →
+   Contraseñas de aplicaciones; son 16 caracteres). La contraseña normal de Gmail **no** funciona.
+   Otros proveedores válidos: Brevo, SendGrid, Mailgun o Amazon SES (dan usuario y clave SMTP).
+   Microsoft 365 / Outlook suele exigir OAuth2 o un relay; ver `docs/GUIA-OPERACION.md`.
+2. Edita `.env` (nunca lo subas al repositorio):
+
+   ```
+   APP_INITIAL_ADMIN_EMAIL=tu-correo@gmail.com   # aquí llegarán los códigos del administrador
+   MAIL_HOST=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_USERNAME=tu-correo@gmail.com
+   MAIL_PASSWORD=xxxx xxxx xxxx xxxx              # contraseña de aplicación de 16 caracteres
+   MAIL_AUTH=true
+   MAIL_STARTTLS=true
+   MAIL_SSL=false
+   MAIL_FROM=tu-correo@gmail.com                  # Gmail reescribe el remitente si no coincide con la cuenta
+   MAIL_FROM_NAME=MailDesk Pro
+   APP_MAIL_REAL=true
+   ```
+
+3. Reinicia la aplicación (`scripts\start.ps1` o *Run* en NetBeans). El aviso amarillo desaparece y en
+   *Administración → Configuración* verás «Servidor real declarado». Ya no necesitas el SMTP local.
+4. Prueba el flujo completo:
+   - Si es una instalación nueva, haz el alta inicial: el código de 8 dígitos llega a
+     `APP_INITIAL_ADMIN_EMAIL` (revisa también *Spam*). Si ya hiciste el alta con el SMTP local, simplemente
+     inicia sesión: el código llegará ahora a tu correo real.
+   - Invita a otra dirección tuya desde *Usuarios*: recibirás el enlace de invitación.
+   - Redacta un mensaje a una cuenta tuya y envíalo. En *Enviados* aparecerá «Aceptado por el servidor»
+     con la respuesta SMTP (`250 …`) y el correo llegará a la bandeja del destinatario. Las respuestas
+     llegan al correo del usuario que lo redactó (cabecera `Reply-To`).
+   - Prueba *¿Olvidaste tu contraseña?*: el enlace de restablecimiento llega a tu bandeja.
+5. Si algo falla, revisa el estado del mensaje en *Fallidos* (motivo exacto) y la tabla de errores de
+   `docs/GUIA-OPERACION.md`. Los fallos típicos son contraseña de aplicación incorrecta
+   (`AuthenticationFailedException`) o un `MAIL_HOST` mal escrito.
+
+Ten en cuenta los límites del proveedor (Gmail personal: ~500 correos/día) y ajusta
+`APP_MAIL_QUOTA_PER_USER_PER_DAY` en `.env` si hace falta.
+
 Análisis de dependencias vulnerables (descarga la base NVD, tarda):
 
 ```powershell
