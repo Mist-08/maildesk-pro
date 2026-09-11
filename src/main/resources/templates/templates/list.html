@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'templates')}">
+<head><title>Plantillas · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div><h1>Plantillas</h1><p class="muted">Reutiliza asuntos y cuerpos con variables seguras.</p></div>
+        <a th:href="@{/templates/new}" class="btn btn-primary">+ Nueva plantilla</a>
+    </div>
+    <div class="toolbar">
+        <form method="get" th:action="@{/templates}" role="search">
+            <input type="search" name="q" th:value="${q}" placeholder="Buscar por nombre" aria-label="Buscar plantillas">
+            <button type="submit" class="btn">Buscar</button>
+        </form>
+    </div>
+    <div class="card">
+        <div th:if="${page.totalElements == 0}" class="empty"><div class="big">❏</div>No tienes plantillas todavía.</div>
+        <div class="table-wrap" th:if="${page.totalElements > 0}">
+            <table>
+                <thead><tr><th>Nombre</th><th>Asunto</th><th>Actualizada</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="t : ${page.content}">
+                    <td><a th:href="@{/templates/{id}/edit(id=${t.id})}" class="row-link" th:text="${t.name}">Nombre</a></td>
+                    <td class="small" th:text="${@fmt.truncate(t.subject, 80)}">asunto</td>
+                    <td class="small muted" th:text="${@fmt.dateTime(t.updatedAt)}">fecha</td>
+                    <td><div class="actions">
+                        <a th:href="@{/messages/new(templateId=${t.id})}" class="btn btn-sm">Redactar con esta</a>
+                        <form method="post" th:action="@{/templates/{id}/delete(id=${t.id})}" class="inline" data-confirm="¿Eliminar esta plantilla?">
+                            <button type="submit" class="btn btn-sm btn-ghost">Eliminar</button>
+                        </form>
+                    </div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="~{fragments/flash :: pager(${page}, '/templates?q=' + ${#uris.escapeQueryParam(q)})}"></div>
+    </div>
+</article>
+</body>
+</html>

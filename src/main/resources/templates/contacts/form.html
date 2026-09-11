@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'contacts')}">
+<head><title>Contacto · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <h1 th:text="${contact.id == null} ? 'Nuevo contacto' : 'Editar contacto'">Contacto</h1>
+    </div>
+    <form method="post" th:action="${contact.id == null} ? @{/contacts} : @{/contacts/{id}(id=${contact.id})}" class="card" novalidate>
+        <div class="form-row">
+            <div class="field">
+                <label for="fullName">Nombre completo</label>
+                <input type="text" id="fullName" name="fullName" th:value="${contact.fullName}" required maxlength="160" autofocus>
+            </div>
+            <div class="field">
+                <label for="email">Correo</label>
+                <input type="email" id="email" name="email" th:value="${contact.email}" required maxlength="320">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="field">
+                <label for="company">Empresa</label>
+                <input type="text" id="company" name="company" th:value="${contact.company}" maxlength="160">
+            </div>
+            <div class="field">
+                <label for="phone">Teléfono</label>
+                <input type="text" id="phone" name="phone" th:value="${contact.phone}" maxlength="40">
+            </div>
+        </div>
+        <div class="field">
+            <label for="notes">Notas</label>
+            <textarea id="notes" name="notes" th:text="${contact.notes}" maxlength="2000"></textarea>
+        </div>
+        <div class="field" th:if="${!#lists.isEmpty(tags)}">
+            <span class="small" style="font-weight:600">Etiquetas</span>
+            <div class="flex mt">
+                <label class="check" th:each="t : ${tags}">
+                    <input type="checkbox" name="tagIds" th:value="${t.id}" th:checked="${#lists.contains(selectedTags, t.id)}">
+                    <span class="tag" th:style="'background:' + ${t.color}" th:text="${t.name}">tag</span>
+                </label>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a th:href="@{/contacts}" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</article>
+</body>
+</html>

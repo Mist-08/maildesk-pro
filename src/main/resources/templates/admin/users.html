@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'admin-users')}">
+<head><title>Usuarios · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head"><div><h1>Usuarios</h1><p class="muted">Alta por invitación. Los administradores no ven el contenido privado de otros usuarios.</p></div></div>
+    <div class="compose-layout">
+        <div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th>Acciones</th></tr></thead>
+                        <tbody>
+                        <tr th:each="u : ${page.content}">
+                            <td><strong th:text="${u.displayName}">Nombre</strong><div class="small muted" th:text="${u.email}">correo</div></td>
+                            <td th:text="${u.role.label}">Rol</td>
+                            <td><span class="pill" th:classappend="${u.status.name() == 'ACTIVE'} ? 'pill-ok' : (${u.status.name() == 'DISABLED'} ? 'pill-danger' : 'pill-warn')" th:text="${u.status.label}">Estado</span></td>
+                            <td class="small muted" th:text="${@fmt.dateTime(u.lastLoginAt)}">—</td>
+                            <td>
+                                <div class="actions" th:if="${u.id != currentUser.id}">
+                                    <form method="post" th:action="@{/admin/users/{id}/status(id=${u.id})}" class="inline" th:if="${u.status.name() == 'ACTIVE'}" data-confirm="¿Deshabilitar esta cuenta? Se cerrarán sus sesiones.">
+                                        <input type="hidden" name="status" value="DISABLED">
+                                        <button type="submit" class="btn btn-sm">Deshabilitar</button>
+                                    </form>
+                                    <form method="post" th:action="@{/admin/users/{id}/status(id=${u.id})}" class="inline" th:if="${u.status.name() == 'DISABLED'}">
+                                        <input type="hidden" name="status" value="ACTIVE">
+                                        <button type="submit" class="btn btn-sm">Habilitar</button>
+                                    </form>
+                                    <form method="post" th:action="@{/admin/users/{id}/role(id=${u.id})}" class="inline">
+                                        <input type="hidden" name="role" th:value="${u.role.name() == 'ADMIN'} ? 'USER' : 'ADMIN'">
+                                        <button type="submit" class="btn btn-sm btn-ghost" th:text="${u.role.name() == 'ADMIN'} ? 'Hacer usuario' : 'Hacer administrador'">Rol</button>
+                                    </form>
+                                </div>
+                                <span th:if="${u.id == currentUser.id}" class="muted small">Tú</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{fragments/flash :: pager(${page}, '/admin/users')}"></div>
+            </div>
+            <div class="card">
+                <h2>Invitaciones pendientes</h2>
+                <p th:if="${#lists.isEmpty(invitations)}" class="muted small">No hay invitaciones pendientes.</p>
+                <ul class="list-plain" th:unless="${#lists.isEmpty(invitations)}">
+                    <li th:each="i : ${invitations}">
+                        <div><strong th:text="${i.email}">correo</strong> <span class="pill pill-muted" th:text="${i.role.label}">rol</span>
+                            <div class="muted small">Vence <span th:text="${@fmt.dateTime(i.expiresAt)}">fecha</span></div></div>
+                        <form method="post" th:action="@{/admin/users/invitations/{id}/revoke(id=${i.id})}" class="inline">
+                            <button type="submit" class="btn btn-sm btn-ghost">Revocar</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <aside>
+            <section class="card">
+                <h3>Invitar usuario</h3>
+                <form method="post" th:action="@{/admin/users/invite}" novalidate>
+                    <div class="field">
+                        <label for="inviteEmail">Correo</label>
+                        <input type="email" id="inviteEmail" name="email" required maxlength="320">
+                    </div>
+                    <div class="field">
+                        <label for="inviteRole">Rol</label>
+                        <select id="inviteRole" name="role">
+                            <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.label}" th:selected="${r.name() == 'USER'}">Rol</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar invitación</button>
+                    <p class="hint mt">El enlace vence en 72 horas y solo puede usarse una vez. La persona define su propia contraseña.</p>
+                </form>
+            </section>
+        </aside>
+    </div>
+</article>
+</body>
+</html>

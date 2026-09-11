@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/auth :: layout(~{::title}, ~{::article})}">
+<head><title>Restablecer contraseña · MailDesk Pro</title></head>
+<body>
+<article>
+    <h2>Restablecer contraseña</h2>
+    <div th:if="${invalid}" class="alert alert-error" role="alert">
+        El enlace no es válido, venció o ya fue utilizado. <a th:href="@{/password/forgot}">Solicita uno nuevo</a>.
+    </div>
+    <form th:unless="${invalid}" method="post" th:action="@{/password/reset}" novalidate>
+        <input type="hidden" name="token" th:value="${token}">
+        <div class="field">
+            <label for="password">Nueva contraseña</label>
+            <input type="password" id="password" name="password" required minlength="10" maxlength="128" autocomplete="new-password" autofocus>
+        </div>
+        <div class="field">
+            <label for="passwordConfirm">Confirmar contraseña</label>
+            <input type="password" id="passwordConfirm" name="passwordConfirm" required minlength="10" maxlength="128" autocomplete="new-password">
+        </div>
+        <p class="hint">Mínimo 10 caracteres combinando letras con números o símbolos.</p>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+        </div>
+    </form>
+    <div class="auth-links"><a th:href="@{/login}">Volver a iniciar sesión</a></div>
+</article>
+</body>
+</html>

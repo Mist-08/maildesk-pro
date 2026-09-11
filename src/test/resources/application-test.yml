@@ -1,0 +1,37 @@
+# Perfil TEST: H2 en memoria (modo PostgreSQL) y GreenMail como SMTP aislado.
+# Los valores de secretos aqui son SOLO para pruebas automaticas.
+spring:
+  datasource:
+    url: jdbc:h2:mem:maildesk-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  mail:
+    host: 127.0.0.1
+    port: 3025
+    properties:
+      mail.smtp.connectiontimeout: 3000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+  thymeleaf:
+    cache: true
+app:
+  base-url: http://localhost
+  initial-admin-email: admin@empresa.test
+  setup-secret: test-setup-secret-0123456789
+  otp-hmac-secret: test-only-otp-hmac-secret-with-32-chars!!
+  storage-dir: ./target/test-storage
+  allow-generated-otp-key: false
+  mail:
+    from: pruebas@maildesk.test
+    from-name: MailDesk Pruebas
+    real: false
+    quota-per-user-per-day: 5
+    max-attempts: 2
+    retry-backoff-seconds: 0
+  outbox:
+    scheduler-enabled: false
+logging:
+  level:
+    com.mycompany.maildesk: INFO
+    org.springframework.security: WARN

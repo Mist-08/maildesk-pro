@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, ${box})}">
+<head><title th:text="${boxTitle} + ' · MailDesk Pro'">Mensajes · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div><h1 th:text="${boxTitle}">Mensajes</h1><p class="muted">Búsqueda por asunto o destinatario.</p></div>
+        <a th:href="@{/messages/new}" class="btn btn-primary">✎ Redactar</a>
+    </div>
+    <div class="tabs" role="tablist">
+        <a th:href="@{/messages(box='all', q=${q})}" th:classappend="${box == 'all'} ? 'active'">Todos</a>
+        <a th:href="@{/messages(box='drafts', q=${q})}" th:classappend="${box == 'drafts'} ? 'active'">Borradores</a>
+        <a th:href="@{/messages(box='outbox', q=${q})}" th:classappend="${box == 'outbox'} ? 'active'">Bandeja de salida</a>
+        <a th:href="@{/messages(box='sent', q=${q})}" th:classappend="${box == 'sent'} ? 'active'">Enviados</a>
+        <a th:href="@{/messages(box='failed', q=${q})}" th:classappend="${box == 'failed'} ? 'active'">Fallidos</a>
+    </div>
+    <div class="toolbar">
+        <form method="get" th:action="@{/messages}" role="search">
+            <input type="hidden" name="box" th:value="${box}">
+            <input type="search" name="q" th:value="${q}" placeholder="Buscar asunto o destinatario" aria-label="Buscar mensajes">
+            <button type="submit" class="btn">Buscar</button>
+            <a th:if="${!#strings.isEmpty(q)}" th:href="@{/messages(box=${box})}" class="btn btn-ghost">Limpiar</a>
+        </form>
+    </div>
+    <div class="card">
+        <div th:if="${page.totalElements == 0}" class="empty">
+            <div class="big">✉</div>
+            <p th:if="${#strings.isEmpty(q)}">No hay mensajes en esta vista.</p>
+            <p th:unless="${#strings.isEmpty(q)}">Sin resultados para «<span th:text="${q}"></span>».</p>
+        </div>
+        <div class="table-wrap" th:if="${page.totalElements > 0}">
+            <table>
+                <thead><tr><th>Estado</th><th>Asunto</th><th>Para</th><th>Actualizado</th><th>Intentos</th></tr></thead>
+                <tbody>
+                <tr th:each="m : ${page.content}">
+                    <td><span class="pill" th:classappend="'status-' + ${m.status.css}" th:text="${m.status.label}">Estado</span></td>
+                    <td>
+                        <a th:href="${m.status.editable} ? @{/messages/{id}/edit(id=${m.id})} : @{/messages/{id}(id=${m.id})}" class="row-link"
+                           th:text="${#strings.isEmpty(m.subject) ? '(sin asunto)' : @fmt.truncate(m.subject, 70)}">Asunto</a>
+                        <div th:if="${m.lastError != null}" class="muted small" th:text="${@fmt.truncate(m.lastError, 100)}">error</div>
+                    </td>
+                    <td class="small" th:text="${@fmt.truncate(m.toRecipients, 60)}">para</td>
+                    <td class="small muted" th:text="${@fmt.dateTime(m.updatedAt)}">fecha</td>
+                    <td class="small muted" th:text="${m.attempts}">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="~{fragments/flash :: pager(${page}, '/messages?box=' + ${box} + '&q=' + ${#uris.escapeQueryParam(q)})}"></div>
+    </div>
+</article>
+</body>
+</html>

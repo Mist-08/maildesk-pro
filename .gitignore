@@ -1,0 +1,26 @@
+# Build
+target/
+*.class
+*.log
+
+# Secretos y datos locales
+.env
+.env.*
+!.env.example
+data/
+storage/
+tools/
+
+# IDE
+nbproject/private/
+nbactions*.xml
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# SO
+Thumbs.db
+.DS_Store

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'account')}">
+<head><title>Mi cuenta · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head"><div><h1>Mi cuenta</h1><p class="muted" th:text="${user.email}">correo</p></div></div>
+    <div class="grid grid-2">
+        <section class="card">
+            <h2>Perfil</h2>
+            <form method="post" th:action="@{/account/profile}">
+                <div class="field">
+                    <label for="displayName">Nombre visible</label>
+                    <input type="text" id="displayName" name="displayName" th:value="${user.displayName}" required maxlength="120">
+                    <div class="hint">Aparece como remitente junto al nombre del negocio; las respuestas llegan a tu correo.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Firma</h2>
+            <form method="post" th:action="@{/account/signature}">
+                <div class="field">
+                    <label for="editor">Firma (HTML saneado)</label>
+                    <div class="editor-toolbar" role="toolbar" aria-label="Formato">
+                        <button type="button" data-cmd="bold"><strong>B</strong></button>
+                        <button type="button" data-cmd="italic"><em>I</em></button>
+                        <button type="button" data-cmd="createLink">Enlace</button>
+                        <button type="button" data-cmd="removeFormat">Limpiar</button>
+                    </div>
+                    <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Firma" th:utext="${user.signatureHtml}" style="min-height:120px"></div>
+                    <input type="hidden" id="body" name="signatureHtml" th:value="${user.signatureHtml}">
+                    <input type="radio" name="contentType" value="HTML" checked hidden aria-hidden="true">
+                    <div class="hint">Si la dejas vacía se usará la firma predeterminada del negocio.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar firma</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Cambiar contraseña</h2>
+            <form method="post" th:action="@{/account/password}" novalidate>
+                <div class="field">
+                    <label for="currentPassword">Contraseña actual</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="newPassword">Nueva contraseña</label>
+                        <input type="password" id="newPassword" name="newPassword" required minlength="10" maxlength="128" autocomplete="new-password">
+                    </div>
+                    <div class="field">
+                        <label for="newPasswordConfirm">Confirmar</label>
+                        <input type="password" id="newPasswordConfirm" name="newPasswordConfirm" required minlength="10" maxlength="128" autocomplete="new-password">
+                    </div>
+                </div>
+                <p class="hint">Al cambiarla se cerrarán tus otras sesiones.</p>
+                <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Cambiar correo de acceso</h2>
+            <form method="post" th:action="@{/account/email/start}" novalidate>
+                <div class="field">
+                    <label for="pw2">Contraseña actual (reautenticación)</label>
+                    <input type="password" id="pw2" name="currentPassword" required autocomplete="current-password">
+                </div>
+                <div class="field">
+                    <label for="newEmail">Nuevo correo</label>
+                    <input type="email" id="newEmail" name="newEmail" required maxlength="320">
+                    <div class="hint">Enviaremos un código de verificación a la nueva dirección.</div>
+                </div>
+                <button type="submit" class="btn">Enviar código al nuevo correo</button>
+            </form>
+        </section>
+    </div>
+</article>
+</body>
+</html>

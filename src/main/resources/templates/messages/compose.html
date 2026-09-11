@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'drafts')}">
+<head><title>Redactar · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div><h1>Redactar</h1><p class="muted">Borrador #<span th:text="${message.id}">1</span> · se guarda automáticamente.</p></div>
+        <span id="autosave-status" class="autosave-status" aria-live="polite"></span>
+    </div>
+    <div class="compose-layout">
+        <form method="post" th:action="@{/messages/{id}/save(id=${message.id})}" th:attr="data-autosave=@{/api/drafts/{id}(id=${message.id})}"
+              class="card" id="compose-form" novalidate>
+            <input type="hidden" name="submissionToken" th:value="${form.submissionToken}">
+            <div class="field suggest">
+                <label for="to">Para</label>
+                <input type="text" id="to" name="to" th:value="${form.to}" data-suggest placeholder="correo@ejemplo.com, otro@ejemplo.com" autocomplete="off" maxlength="4000">
+                <div class="hint">Separa varias direcciones con comas. Escribe 2 letras para sugerir contactos.</div>
+            </div>
+            <div class="form-row">
+                <div class="field suggest">
+                    <label for="cc">CC</label>
+                    <input type="text" id="cc" name="cc" th:value="${form.cc}" data-suggest autocomplete="off" maxlength="4000">
+                </div>
+                <div class="field suggest">
+                    <label for="bcc">CCO</label>
+                    <input type="text" id="bcc" name="bcc" th:value="${form.bcc}" data-suggest autocomplete="off" maxlength="4000">
+                </div>
+            </div>
+            <div class="field">
+                <label for="subject">Asunto</label>
+                <input type="text" id="subject" name="subject" th:value="${form.subject}" maxlength="500" required>
+            </div>
+            <div class="field">
+                <span class="flex" role="radiogroup" aria-label="Formato del mensaje">
+                    <label class="check"><input type="radio" name="contentType" value="HTML" th:checked="${form.contentType.name() == 'HTML'}"> HTML con formato</label>
+                    <label class="check"><input type="radio" name="contentType" value="TEXT" th:checked="${form.contentType.name() == 'TEXT'}"> Texto sin formato</label>
+                </span>
+            </div>
+            <div class="field">
+                <label for="editor">Mensaje</label>
+                <div class="editor-toolbar" role="toolbar" aria-label="Formato">
+                    <button type="button" data-cmd="bold" title="Negrita"><strong>B</strong></button>
+                    <button type="button" data-cmd="italic" title="Cursiva"><em>I</em></button>
+                    <button type="button" data-cmd="underline" title="Subrayado"><u>U</u></button>
+                    <button type="button" data-cmd="insertUnorderedList" title="Lista">• Lista</button>
+                    <button type="button" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
+                    <button type="button" data-cmd="formatBlock" data-value="h2" title="Título">Título</button>
+                    <button type="button" data-cmd="formatBlock" data-value="p" title="Párrafo">Párrafo</button>
+                    <button type="button" data-cmd="createLink" title="Enlace">Enlace</button>
+                    <button type="button" data-cmd="removeFormat" title="Quitar formato">Limpiar</button>
+                </div>
+                <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Cuerpo del mensaje"
+                     th:utext="${form.contentType.name() == 'HTML' ? form.body : ''}"></div>
+                <textarea id="bodyText" aria-label="Cuerpo del mensaje en texto plano" th:text="${form.contentType.name() == 'TEXT' ? form.body : ''}" hidden></textarea>
+                <input type="hidden" id="body" name="body" th:value="${form.body}">
+                <div class="hint">El contenido HTML se sanea en el servidor: se eliminan scripts y atributos peligrosos.</div>
+            </div>
+            <div class="field">
+                <label class="check"><input type="checkbox" name="includeSignature" value="true" th:checked="${form.includeSignature}"> Incluir mi firma</label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">Guardar borrador</button>
+                <button type="submit" class="btn btn-primary" th:formaction="@{/messages/{id}/send(id=${message.id})}">Enviar</button>
+                <a th:href="@{/messages(box='drafts')}" class="btn btn-ghost">Volver</a>
+            </div>
+            <p class="hint mt">Al enviar, el mensaje entra en la cola de salida. «Aceptado por el servidor» significa que el SMTP lo recibió; no confirma la entrega al destinatario.</p>
+        </form>
+
+        <aside>
+            <section class="card">
+                <h3>Adjuntos <span class="muted small">(<span th:text="${#lists.size(attachments)}">0</span>)</span></h3>
+                <ul class="list-plain" th:if="${!#lists.isEmpty(attachments)}">
+                    <li th:each="a : ${attachments}">
+                        <div><a th:href="@{/attachments/{id}/download(id=${a.id})}" th:text="${a.originalName}">archivo</a>
+                            <div class="muted small" th:text="${a.humanSize}">1 KB</div></div>
+                        <form method="post" th:action="@{/messages/{id}/attachments/{aid}/delete(id=${message.id}, aid=${a.id})}" class="inline">
+                            <button type="submit" class="btn btn-ghost btn-sm" aria-label="Quitar adjunto">✕</button>
+                        </form>
+                    </li>
+                </ul>
+                <form method="post" th:action="@{/messages/{id}/attachments(id=${message.id})}" enctype="multipart/form-data" class="mt">
+                    <div class="field">
+                        <label for="file">Agregar archivo</label>
+                        <input type="file" id="file" name="file" required>
+                        <div class="hint">Permitidos: <span th:text="${allowedExtensions}">pdf…</span>. Máx. 10 MB por archivo.</div>
+                    </div>
+                    <button type="submit" class="btn btn-sm">Subir</button>
+                </form>
+            </section>
+            <section class="card">
+                <h3>Usar plantilla</h3>
+                <div th:if="${#lists.isEmpty(templates)}" class="muted small">Aún no tienes plantillas. <a th:href="@{/templates/new}">Crear una</a>.</div>
+                <form th:unless="${#lists.isEmpty(templates)}" method="post" th:action="@{/messages/{id}/apply-template(id=${message.id})}">
+                    <div class="field">
+                        <label for="templateId">Plantilla</label>
+                        <select id="templateId" name="templateId" required>
+                            <option th:each="t : ${templates}" th:value="${t.id}" th:text="${t.name}">Plantilla</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="contactId">Contacto para variables (opcional)</label>
+                        <select id="contactId" name="contactId">
+                            <option value="">— Sin contacto —</option>
+                            <option th:each="c : ${contacts}" th:value="${c.id}" th:text="${c.fullName + ' <' + c.email + '>'}">Contacto</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm">Aplicar (reemplaza asunto y cuerpo)</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+</article>
+</body>
+</html>

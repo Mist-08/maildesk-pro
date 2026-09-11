@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'dashboard')}">
+<head><title>Panel · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div>
+            <h1>Panel</h1>
+            <p class="muted">Hola, <span th:text="${currentUser.displayName}">Usuario</span>. Resumen real de tu actividad.</p>
+        </div>
+        <a th:href="@{/messages/new}" class="btn btn-primary">✎ Redactar</a>
+    </div>
+
+    <div class="stats">
+        <div class="stat ok">
+            <div class="label">Aceptados por SMTP (7 días)</div>
+            <div class="value" th:text="${sentWeek}">0</div>
+            <div class="sub"><span th:text="${sentTotal}">0</span> en total · no equivale a entrega al destinatario</div>
+        </div>
+        <div class="stat danger">
+            <div class="label">Fallidos / inciertos (7 días)</div>
+            <div class="value" th:text="${failedWeek}">0</div>
+            <div class="sub"><span th:text="${failedTotal}">0</span> en total · <span th:text="${uncertain}">0</span> inciertos</div>
+        </div>
+        <div class="stat">
+            <div class="label">En cola</div>
+            <div class="value" th:text="${queued}">0</div>
+            <div class="sub">Pendientes de envío</div>
+        </div>
+        <div class="stat">
+            <div class="label">Borradores</div>
+            <div class="value" th:text="${drafts}">0</div>
+            <div class="sub"><a th:href="@{/messages(box='drafts')}">Ver borradores</a></div>
+        </div>
+        <div class="stat" th:classappend="${quotaUsed >= quotaMax} ? 'warn'">
+            <div class="label">Cuota diaria</div>
+            <div class="value"><span th:text="${quotaUsed}">0</span><span class="muted small"> / <span th:text="${quotaMax}">200</span></span></div>
+            <div class="sub">Mensajes puestos en cola en 24 h</div>
+        </div>
+        <div class="stat">
+            <div class="label">Contactos · Plantillas</div>
+            <div class="value"><span th:text="${contactCount}">0</span> · <span th:text="${templateCount}">0</span></div>
+            <div class="sub"><a th:href="@{/contacts}">Contactos</a> · <a th:href="@{/templates}">Plantillas</a></div>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <section class="card">
+            <div class="card-title"><h2>Últimos fallos</h2><a th:href="@{/messages(box='failed')}" class="btn btn-sm">Ver todos</a></div>
+            <div th:if="${#lists.isEmpty(recentFailed)}" class="empty"><div class="big">✓</div>Sin fallos recientes.</div>
+            <ul class="list-plain" th:unless="${#lists.isEmpty(recentFailed)}">
+                <li th:each="m : ${recentFailed}">
+                    <div>
+                        <a th:href="@{/messages/{id}(id=${m.id})}" class="row-link" th:text="${#strings.isEmpty(m.subject) ? '(sin asunto)' : @fmt.truncate(m.subject, 60)}">Asunto</a>
+                        <div class="muted small" th:text="${@fmt.truncate(m.lastError, 90)}">Error</div>
+                    </div>
+                    <span class="pill" th:classappend="'status-' + ${m.status.css}" th:text="${m.status.label}">Estado</span>
+                </li>
+            </ul>
+        </section>
+        <section class="card">
+            <div class="card-title"><h2>Últimos aceptados</h2><a th:href="@{/messages(box='sent')}" class="btn btn-sm">Ver todos</a></div>
+            <div th:if="${#lists.isEmpty(recentSent)}" class="empty"><div class="big">✉</div>Aún no has enviado mensajes.</div>
+            <ul class="list-plain" th:unless="${#lists.isEmpty(recentSent)}">
+                <li th:each="m : ${recentSent}">
+                    <div>
+                        <a th:href="@{/messages/{id}(id=${m.id})}" class="row-link" th:text="${#strings.isEmpty(m.subject) ? '(sin asunto)' : @fmt.truncate(m.subject, 60)}">Asunto</a>
+                        <div class="muted small" th:text="${@fmt.truncate(m.toRecipients, 70)}">Para</div>
+                    </div>
+                    <span class="muted small" th:text="${@fmt.dateTime(m.sentAt)}">fecha</span>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <div th:if="${isAdmin}" class="grid grid-2 mt">
+        <section class="card">
+            <h2>Estado del sistema</h2>
+            <dl class="meta">
+                <dt>Usuarios activos</dt><dd th:text="${activeUsers}">1</dd>
+                <dt>Cola global</dt><dd th:text="${globalQueue}">0</dd>
+                <dt>Correo saliente</dt>
+                <dd>
+                    <span th:if="${mailConfigured != true}" class="pill pill-danger">Sin configurar</span>
+                    <span th:if="${mailConfigured == true and mailReal != true}" class="pill pill-warn">Servidor local de pruebas (correo real pendiente)</span>
+                    <span th:if="${mailConfigured == true and mailReal == true}" class="pill pill-ok">Servidor real configurado</span>
+                </dd>
+            </dl>
+            <a th:href="@{/admin/settings}" class="btn btn-sm mt">Configuración</a>
+        </section>
+        <section class="card">
+            <div class="card-title"><h2>Auditoría reciente</h2><a th:href="@{/admin/audit}" class="btn btn-sm">Ver todo</a></div>
+            <ul class="list-plain">
+                <li th:each="a : ${recentAudit}">
+                    <div><strong th:text="${a.action}">ACCION</strong> <span class="muted small" th:text="${a.actorEmail}">actor</span></div>
+                    <span class="muted small" th:text="${@fmt.dateTime(a.createdAt)}">fecha</span>
+                </li>
+            </ul>
+        </section>
+    </div>
+</article>
+</body>
+</html>

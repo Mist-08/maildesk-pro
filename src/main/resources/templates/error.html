@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/auth :: layout(~{::title}, ~{::article})}">
+<head><title>Error · MailDesk Pro</title></head>
+<body>
+<article>
+    <h2>Algo salió mal</h2>
+    <p class="muted">La solicitud no pudo procesarse<span th:if="${status != null}"> (código <span th:text="${status}">500</span>)</span>.</p>
+    <a th:href="@{/}" class="btn btn-primary">Ir al panel</a>
+</article>
+</body>
+</html>

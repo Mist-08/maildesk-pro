@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}">
+    <title th:replace="${title}">MailDesk Pro</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="icon" th:href="@{/img/favicon.svg}" type="image/svg+xml">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body class="auth-body" th:attr="style='--accent:' + ${accentColor}">
+<div class="auth-wrap">
+    <div class="auth-brand">
+        <img th:if="${hasLogo}" th:src="@{/branding/logo}" alt="" class="brand-logo lg">
+        <span th:unless="${hasLogo}" class="brand-mark lg" aria-hidden="true">M</span>
+        <h1 th:text="${businessName}">MailDesk Pro</h1>
+        <p class="muted">Gestor de envío de correos</p>
+    </div>
+    <div class="card auth-card">
+        <div th:replace="~{fragments/flash :: flash}"></div>
+        <div th:replace="${content}"></div>
+    </div>
+    <p th:if="${mailConfigured == true and mailReal != true}" class="pill pill-warn auth-note">Correo real pendiente de configuración: los códigos llegan al servidor SMTP local de pruebas.</p>
+    <p th:if="${mailConfigured != true}" class="pill pill-danger auth-note">Correo sin configurar: no podrán enviarse códigos de verificación.</p>
+    <div class="auth-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-toggle="theme">◐ Tema</button>
+    </div>
+</div>
+</body>
+</html>

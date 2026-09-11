@@ -1,0 +1,11 @@
+target/
+data/
+storage/
+tools/
+.env
+.env.*
+!.env.example
+nbproject/
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="flash">
+    <div th:if="${success}" class="alert alert-success" role="status" th:text="${success}">Listo</div>
+    <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">Error</div>
+    <div th:if="${info}" class="alert alert-info" role="status" th:text="${info}">Info</div>
+</div>
+<div th:fragment="pager(page, baseUrl)" th:if="${page != null and page.totalPages > 1}" class="pager" role="navigation" aria-label="Paginación">
+    <a th:if="${page.hasPrevious()}" th:href="${baseUrl + (baseUrl.contains('?') ? '&' : '?') + 'page=' + (page.number - 1)}" class="btn btn-sm">← Anterior</a>
+    <span class="muted">Página <span th:text="${page.number + 1}">1</span> de <span th:text="${page.totalPages}">1</span> · <span th:text="${page.totalElements}">0</span> elementos</span>
+    <a th:if="${page.hasNext()}" th:href="${baseUrl + (baseUrl.contains('?') ? '&' : '?') + 'page=' + (page.number + 1)}" class="btn btn-sm">Siguiente →</a>
+</div>
+</body>
+</html>

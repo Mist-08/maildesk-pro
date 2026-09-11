@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/auth :: layout(~{::title}, ~{::article})}">
+<head><title>Verificación en dos pasos · MailDesk Pro</title></head>
+<body>
+<article>
+    <h2 th:text="${verifyTitle}">Verificación en dos pasos</h2>
+    <p class="muted small">Enviamos un código de 8 dígitos a <strong th:text="${maskedEmail}">a***@dominio</strong>.
+        Caduca en <span th:text="${ttlMinutes}">5</span> minutos y solo puede usarse una vez.</p>
+    <form method="post" th:action="@{${basePath + '/verify'}}" novalidate>
+        <div class="field">
+            <label for="code">Código de verificación</label>
+            <input type="text" id="code" name="code" class="code-input" inputmode="numeric" pattern="[0-9]{8}" maxlength="8"
+                   autocomplete="one-time-code" required autofocus aria-describedby="code-hint">
+            <div class="hint" id="code-hint">Escribe los 8 dígitos tal como aparecen en el correo.</div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Verificar</button>
+        </div>
+    </form>
+    <div class="auth-links">
+        <form method="post" th:action="@{${basePath + '/resend'}}" th:attr="data-resend-wait=${resendWait}" class="inline">
+            <button type="submit" class="btn btn-ghost btn-sm">Reenviar código</button>
+            <span class="muted small" data-countdown th:text="${resendWait > 0} ? 'Podrás reenviar en ' + ${resendWait} + ' s' : ''"></span>
+        </form>
+        <form method="post" th:action="@{${basePath + '/cancel'}}" class="inline">
+            <button type="submit" class="btn btn-ghost btn-sm">Cancelar</button>
+        </form>
+    </div>
+</article>
+</body>
+</html>

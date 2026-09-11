@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/auth :: layout(~{::title}, ~{::article})}">
+<head><title>Acceso denegado · MailDesk Pro</title></head>
+<body>
+<article>
+    <h2>Acceso denegado</h2>
+    <p class="muted">No tienes permisos para esta acción o la solicitud no es válida (por ejemplo, formulario caducado).</p>
+    <a th:href="@{/}" class="btn btn-primary">Ir al panel</a>
+</article>
+</body>
+</html>

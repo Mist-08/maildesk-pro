@@ -1,0 +1,19 @@
+# Perfil DEV: PostgreSQL y Mailpit locales (ver compose.yaml: docker compose up db mailpit).
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/maildesk}
+    username: ${DB_USERNAME:maildesk}
+    password: ${DB_PASSWORD:maildesk}
+  thymeleaf:
+    cache: false
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+app:
+  allow-generated-otp-key: true
+  mail:
+    from: ${MAIL_FROM:maildesk@localhost.test}
+    real: ${APP_MAIL_REAL:false}
+logging:
+  level:
+    com.mycompany.maildesk: DEBUG

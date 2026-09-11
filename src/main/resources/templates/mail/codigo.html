@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body style="font-family:Segoe UI,Arial,sans-serif;background:#f4f5f9;padding:24px;color:#1c2030">
+<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e3e6ee">
+    <h2 style="margin:0 0 8px" th:utext="${businessName}">Negocio</h2>
+    <p style="margin:0 0 16px;color:#5f6577">Código de verificación · <span th:text="${purpose}">inicio de sesión</span></p>
+    <p style="font-size:34px;letter-spacing:8px;font-weight:700;text-align:center;margin:20px 0;font-family:Consolas,monospace" th:text="${code}">00000000</p>
+    <p style="margin:0 0 8px">Este código caduca en <strong th:text="${ttl}">5</strong> minutos y solo puede usarse una vez.</p>
+    <p style="margin:0;color:#5f6577;font-size:13px">Si no solicitaste este código, ignora este mensaje. Nunca lo compartas con nadie.</p>
+</div>
+</body>
+</html>

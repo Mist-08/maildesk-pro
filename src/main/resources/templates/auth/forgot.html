@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/auth :: layout(~{::title}, ~{::article})}">
+<head><title>Recuperar contraseña · MailDesk Pro</title></head>
+<body>
+<article>
+    <h2>Recuperar contraseña</h2>
+    <div th:if="${sent}" class="alert alert-success" role="status">
+        Si el correo corresponde a una cuenta activa, recibirás un enlace para restablecer tu contraseña. Revisa también la carpeta de correo no deseado.
+    </div>
+    <form th:unless="${sent}" method="post" th:action="@{/password/forgot}" novalidate>
+        <p class="muted small">Te enviaremos un enlace temporal de un solo uso. Al usarlo se cerrarán todas tus sesiones.</p>
+        <div class="field">
+            <label for="email">Correo</label>
+            <input type="email" id="email" name="email" required autocomplete="username" autofocus maxlength="320">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Enviar enlace</button>
+        </div>
+    </form>
+    <div class="auth-links"><a th:href="@{/login}">Volver a iniciar sesión</a></div>
+</article>
+</body>
+</html>

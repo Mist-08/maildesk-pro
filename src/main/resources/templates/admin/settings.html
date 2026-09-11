@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'admin-settings')}">
+<head><title>Configuración · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head"><div><h1>Configuración</h1><p class="muted">Personalización del negocio y estado del correo saliente.</p></div></div>
+    <div class="grid grid-2">
+        <section class="card">
+            <h2>Nombre comercial y firma</h2>
+            <form method="post" th:action="@{/admin/settings/branding}" novalidate>
+                <div class="field">
+                    <label for="businessName">Nombre comercial</label>
+                    <input type="text" id="businessName" name="businessName" th:value="${businessName}" required maxlength="80">
+                </div>
+                <div class="field">
+                    <label for="accentColor">Color principal</label>
+                    <div class="flex"><input type="color" id="accentColor" name="accentColor" th:value="${accentColor}"> <span class="muted small" th:text="${accentColor}">#4f46e5</span></div>
+                </div>
+                <div class="field">
+                    <label for="editor">Firma predeterminada del negocio</label>
+                    <div class="editor-toolbar" role="toolbar" aria-label="Formato">
+                        <button type="button" data-cmd="bold"><strong>B</strong></button>
+                        <button type="button" data-cmd="italic"><em>I</em></button>
+                        <button type="button" data-cmd="createLink">Enlace</button>
+                        <button type="button" data-cmd="removeFormat">Limpiar</button>
+                    </div>
+                    <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Firma predeterminada" th:utext="${defaultSignature}" style="min-height:120px"></div>
+                    <input type="hidden" id="body" name="defaultSignature" th:value="${defaultSignature}">
+                    <input type="radio" name="contentType" value="HTML" checked hidden aria-hidden="true">
+                    <div class="hint">Se usa cuando el usuario no tiene firma propia.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Logotipo</h2>
+            <div th:if="${hasLogo}" class="mb"><img th:src="@{/branding/logo}" alt="Logotipo actual" style="max-height:80px;max-width:240px"></div>
+            <form method="post" th:action="@{/admin/settings/logo}" enctype="multipart/form-data">
+                <div class="field">
+                    <label for="logo">Imagen (PNG, JPEG, GIF o WebP, máx. 1 MB)</label>
+                    <input type="file" id="logo" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Subir logotipo</button>
+            </form>
+            <form th:if="${hasLogo}" method="post" th:action="@{/admin/settings/logo/delete}" class="mt">
+                <button type="submit" class="btn btn-ghost btn-sm">Quitar logotipo</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Correo saliente (SMTP)</h2>
+            <p class="muted small">La configuración se define por variables de entorno (ver <code>.env.example</code>); no se edita desde la interfaz para no exponer credenciales.</p>
+            <dl class="meta">
+                <dt>Servidor</dt><dd class="mono" th:text="${mailHost}">host:puerto</dd>
+                <dt>Remitente autorizado</dt><dd class="mono" th:text="${#strings.isEmpty(mailFrom) ? '(sin definir)' : mailFrom}">from</dd>
+                <dt>Estado</dt>
+                <dd>
+                    <span th:if="${mailConfigured != true}" class="pill pill-danger">Sin configurar</span>
+                    <span th:if="${mailConfigured == true and mailReal != true}" class="pill pill-warn">Correo real pendiente de configuración (SMTP local de pruebas)</span>
+                    <span th:if="${mailConfigured == true and mailReal == true}" class="pill pill-ok">Servidor real declarado (APP_MAIL_REAL=true)</span>
+                </dd>
+                <dt>Cola global</dt><dd th:text="${queueDepth}">0</dd>
+                <dt>Resultados inciertos</dt><dd th:text="${uncertainCount}">0</dd>
+            </dl>
+        </section>
+    </div>
+</article>
+</body>
+</html>

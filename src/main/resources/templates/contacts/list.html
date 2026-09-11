@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'contacts')}">
+<head><title>Contactos · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div><h1>Contactos</h1><p class="muted">Tus contactos y etiquetas. Solo tú puedes verlos.</p></div>
+        <a th:href="@{/contacts/new}" class="btn btn-primary">+ Nuevo contacto</a>
+    </div>
+    <div class="compose-layout">
+        <div>
+            <div class="toolbar">
+                <form method="get" th:action="@{/contacts}" role="search">
+                    <input type="hidden" name="tag" th:value="${tag}">
+                    <input type="search" name="q" th:value="${q}" placeholder="Buscar por nombre, correo o empresa" aria-label="Buscar contactos">
+                    <button type="submit" class="btn">Buscar</button>
+                    <a th:if="${!#strings.isEmpty(q) or tag != null}" th:href="@{/contacts}" class="btn btn-ghost">Limpiar</a>
+                </form>
+            </div>
+            <div class="card">
+                <div th:if="${page.totalElements == 0}" class="empty"><div class="big">☺</div>No hay contactos que mostrar.</div>
+                <div class="table-wrap" th:if="${page.totalElements > 0}">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>Correo</th><th>Empresa</th><th>Etiquetas</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="c : ${page.content}">
+                            <td><a th:href="@{/contacts/{id}/edit(id=${c.id})}" class="row-link" th:text="${c.fullName}">Nombre</a>
+                                <div class="muted small" th:if="${c.phone != null}" th:text="${c.phone}">tel</div></td>
+                            <td class="small" th:text="${c.email}">correo</td>
+                            <td class="small" th:text="${c.company}">empresa</td>
+                            <td><span th:each="t : ${c.tags}" class="tag" th:style="'background:' + ${t.color}" th:text="${t.name}">tag</span></td>
+                            <td><div class="actions">
+                                <a th:href="@{/messages/new(contactId=${c.id})}" class="btn btn-sm">Escribir</a>
+                                <form method="post" th:action="@{/contacts/{id}/delete(id=${c.id})}" class="inline" data-confirm="¿Eliminar este contacto?">
+                                    <button type="submit" class="btn btn-sm btn-ghost">Eliminar</button>
+                                </form>
+                            </div></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{fragments/flash :: pager(${page}, '/contacts?q=' + ${#uris.escapeQueryParam(q)} + (${tag} != null ? '&tag=' + ${tag} : ''))}"></div>
+            </div>
+        </div>
+        <aside>
+            <section class="card">
+                <h3>Etiquetas</h3>
+                <p th:if="${#lists.isEmpty(tags)}" class="muted small">Sin etiquetas todavía.</p>
+                <ul class="list-plain">
+                    <li th:each="t : ${tags}">
+                        <a th:href="@{/contacts(tag=${t.id}, q=${q})}" class="tag" th:style="'background:' + ${t.color}" th:text="${t.name}">tag</a>
+                        <form method="post" th:action="@{/contacts/tags/{id}/delete(id=${t.id})}" class="inline" data-confirm="¿Eliminar la etiqueta? Se quitará de los contactos.">
+                            <button type="submit" class="btn btn-ghost btn-sm" aria-label="Eliminar etiqueta">✕</button>
+                        </form>
+                    </li>
+                </ul>
+                <form method="post" th:action="@{/contacts/tags}" class="mt">
+                    <div class="field">
+                        <label for="tagName">Nueva etiqueta</label>
+                        <div class="flex">
+                            <input type="text" id="tagName" name="name" maxlength="60" required class="grow">
+                            <input type="color" name="color" value="#6366f1" aria-label="Color">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm">Crear etiqueta</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+</article>
+</body>
+</html>

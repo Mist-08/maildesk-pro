@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body style="font-family:Segoe UI,Arial,sans-serif;background:#f4f5f9;padding:24px;color:#1c2030">
+<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e3e6ee">
+    <h2 style="margin:0 0 8px" th:utext="${businessName}">Negocio</h2>
+    <p><strong th:text="${inviter}">Alguien</strong> te invitó a usar MailDesk Pro.</p>
+    <p style="text-align:center;margin:24px 0">
+        <a th:href="${link}" style="background:#4f46e5;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Aceptar invitación</a>
+    </p>
+    <p style="font-size:13px;color:#5f6577">O copia este enlace en tu navegador:<br><span th:text="${link}" style="word-break:break-all"></span></p>
+    <p style="font-size:13px;color:#5f6577;margin:0">El enlace vence en <span th:text="${ttl}">72</span> horas y solo puede usarse una vez.</p>
+</div>
+</body>
+</html>

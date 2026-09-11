@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'admin-audit')}">
+<head><title>Auditoría · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head"><div><h1>Auditoría</h1><p class="muted">Acciones relevantes. No se registran contraseñas, códigos ni cuerpos de correo.</p></div></div>
+    <div class="toolbar">
+        <form method="get" th:action="@{/admin/audit}" role="search">
+            <input type="search" name="q" th:value="${q}" placeholder="Filtrar por acción o correo del actor" aria-label="Filtrar auditoría">
+            <button type="submit" class="btn">Filtrar</button>
+            <a th:if="${!#strings.isEmpty(q)}" th:href="@{/admin/audit}" class="btn btn-ghost">Limpiar</a>
+        </form>
+    </div>
+    <div class="card">
+        <div th:if="${page.totalElements == 0}" class="empty">Sin registros.</div>
+        <div class="table-wrap" th:if="${page.totalElements > 0}">
+            <table>
+                <thead><tr><th>Fecha</th><th>Acción</th><th>Actor</th><th>Objetivo</th><th>Detalle</th><th>IP</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${page.content}">
+                    <td class="small muted" th:text="${@fmt.dateTime(a.createdAt)}">fecha</td>
+                    <td><strong th:text="${a.action}">ACCION</strong></td>
+                    <td class="small" th:text="${a.actorEmail}">actor</td>
+                    <td class="small" th:text="${a.targetType != null ? a.targetType + ' #' + a.targetId : ''}">objetivo</td>
+                    <td class="small" th:text="${a.details}">detalle</td>
+                    <td class="small muted mono" th:text="${a.ipAddress}">ip</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="~{fragments/flash :: pager(${page}, '/admin/audit?q=' + ${#uris.escapeQueryParam(q)})}"></div>
+    </div>
+</article>
+</body>
+</html>

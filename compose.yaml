@@ -1,0 +1,71 @@
+# MailDesk Pro - Docker Compose
+#
+# Desarrollo (solo infraestructura, la app corre desde NetBeans o scripts/start.ps1 con perfil dev):
+#   docker compose up -d db mailpit
+#
+# Ejecución completa reproducible (app + PostgreSQL + Mailpit como SMTP local aislado):
+#   copy .env.example .env   (y completar APP_SETUP_SECRET, APP_OTP_HMAC_SECRET, DB_PASSWORD)
+#   docker compose --profile app up -d --build
+#
+# Mailpit (http://localhost:8025) captura TODO el correo saliente: úselo hasta configurar un SMTP real.
+# Para correo real, cambie MAIL_HOST/MAIL_PORT/MAIL_USERNAME/MAIL_PASSWORD/MAIL_FROM y APP_MAIL_REAL=true en .env.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-maildesk}
+      POSTGRES_USER: ${DB_USERNAME:-maildesk}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-maildesk}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - maildesk-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-maildesk} -d ${DB_NAME:-maildesk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"   # SMTP local aislado
+      - "127.0.0.1:8025:8025"   # Interfaz web para leer códigos y mensajes
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+  app:
+    profiles: ["app"]
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-maildesk}
+      DB_USERNAME: ${DB_USERNAME:-maildesk}
+      DB_PASSWORD: ${DB_PASSWORD:-maildesk}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_AUTH: ${MAIL_AUTH:-false}
+      MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
+      APP_MAIL_REAL: ${APP_MAIL_REAL:-false}
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-false}
+      APP_FORWARD_HEADERS: ${APP_FORWARD_HEADERS:-native}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - maildesk-data:/data
+
+volumes:
+  maildesk-db:
+  maildesk-data:

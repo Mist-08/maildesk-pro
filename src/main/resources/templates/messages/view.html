@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, ${message.status.name() == 'SENT' ? 'sent' : (message.status.name() == 'QUEUED' or message.status.name() == 'SENDING' ? 'outbox' : 'failed')})}">
+<head><title>Mensaje · MailDesk Pro</title></head>
+<body>
+<article>
+    <div class="page-head">
+        <div>
+            <h1 th:text="${#strings.isEmpty(message.subject) ? '(sin asunto)' : message.subject}">Asunto</h1>
+            <p><span class="pill" th:classappend="'status-' + ${message.status.css}" th:text="${message.status.label}">Estado</span></p>
+        </div>
+        <div class="flex">
+            <a th:if="${message.status.editable}" th:href="@{/messages/{id}/edit(id=${message.id})}" class="btn btn-primary">Editar borrador</a>
+            <form th:if="${message.status.cancellable}" method="post" th:action="@{/messages/{id}/cancel(id=${message.id})}" class="inline">
+                <button type="submit" class="btn">Cancelar envío</button>
+            </form>
+            <form th:if="${message.status.retryable}" method="post" th:action="@{/messages/{id}/retry(id=${message.id})}" class="inline">
+                <button type="submit" class="btn btn-primary">Reintentar</button>
+            </form>
+            <form method="post" th:action="@{/messages/{id}/duplicate(id=${message.id})}" class="inline">
+                <button type="submit" class="btn">Duplicar como borrador</button>
+            </form>
+            <form th:if="${message.status.deletable}" method="post" th:action="@{/messages/{id}/delete(id=${message.id})}" class="inline"
+                  data-confirm="¿Eliminar este mensaje definitivamente?">
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${message.status.name() == 'UNCERTAIN'}" class="alert alert-warn" role="alert">
+        La conexión con el servidor falló después de empezar a transmitir el mensaje. No es posible saber si fue aceptado,
+        por lo que no se reintenta automáticamente para evitar duplicados. Verifica con el destinatario o duplícalo como borrador.
+    </div>
+    <div th:if="${message.status.name() == 'SENT'}" class="alert alert-info" role="status">
+        El servidor SMTP aceptó este mensaje el <span th:text="${@fmt.dateTime(message.sentAt)}">fecha</span>.
+        Esto no confirma la entrega al buzón del destinatario.
+    </div>
+    <div th:if="${message.status.name() == 'FAILED'}" class="alert alert-error" role="alert">
+        <strong>Motivo:</strong> <span th:text="${message.lastError}">error</span>
+    </div>
+
+    <div class="grid grid-2">
+        <section class="card">
+            <h2>Detalles</h2>
+            <dl class="meta">
+                <dt>Para</dt><dd th:text="${message.toRecipients}">—</dd>
+                <dt th:if="${!#strings.isEmpty(message.ccRecipients)}">CC</dt><dd th:if="${!#strings.isEmpty(message.ccRecipients)}" th:text="${message.ccRecipients}">—</dd>
+                <dt th:if="${!#strings.isEmpty(message.bccRecipients)}">CCO</dt><dd th:if="${!#strings.isEmpty(message.bccRecipients)}" th:text="${message.bccRecipients}">—</dd>
+                <dt>Formato</dt><dd th:text="${message.contentType.label}">HTML</dd>
+                <dt>Creado</dt><dd th:text="${@fmt.dateTime(message.createdAt)}">—</dd>
+                <dt>En cola</dt><dd th:text="${@fmt.dateTime(message.queuedAt)}">—</dd>
+                <dt>Intentos</dt><dd th:text="${message.attempts}">0</dd>
+                <dt th:if="${message.smtpResponse != null}">Respuesta SMTP</dt><dd th:if="${message.smtpResponse != null}" class="mono" th:text="${message.smtpResponse}">250 OK</dd>
+                <dt th:if="${message.nextAttemptAt != null and message.status.name() == 'QUEUED'}">Próximo intento</dt>
+                <dd th:if="${message.nextAttemptAt != null and message.status.name() == 'QUEUED'}" th:text="${@fmt.dateTime(message.nextAttemptAt)}">—</dd>
+            </dl>
+            <h3 class="mt">Adjuntos</h3>
+            <p th:if="${#lists.isEmpty(attachments)}" class="muted small">Sin adjuntos.</p>
+            <ul class="list-plain" th:unless="${#lists.isEmpty(attachments)}">
+                <li th:each="a : ${attachments}">
+                    <a th:href="@{/attachments/{id}/download(id=${a.id})}" th:text="${a.originalName}">archivo</a>
+                    <span class="muted small" th:text="${a.humanSize}">1 KB</span>
+                </li>
+            </ul>
+        </section>
+        <section class="card">
+            <h2>Contenido</h2>
+            <iframe th:if="${message.contentType.name() == 'HTML'}" class="preview-frame" sandbox="" title="Vista previa del mensaje"
+                    th:srcdoc="${'<!doctype html><meta charset=utf-8><body style=font-family:sans-serif;padding:8px>' + (message.bodyHtml ?: '') + '</body>'}"></iframe>
+            <pre th:if="${message.contentType.name() == 'TEXT'}" class="mono" th:text="${message.bodyHtml}">texto</pre>
+        </section>
+    </div>
+</article>
+</body>
+</html>

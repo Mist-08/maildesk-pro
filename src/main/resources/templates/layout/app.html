@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content, nav)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}">
+    <title th:replace="${title}">MailDesk Pro</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="icon" th:href="@{/img/favicon.svg}" type="image/svg+xml">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body th:attr="style='--accent:' + ${accentColor}">
+<a class="skip-link" href="#contenido">Ir al contenido</a>
+<div class="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+        <div class="brand">
+            <img th:if="${hasLogo}" th:src="@{/branding/logo}" alt="" class="brand-logo">
+            <span th:unless="${hasLogo}" class="brand-mark" aria-hidden="true">M</span>
+            <span class="brand-name" th:text="${businessName}">MailDesk Pro</span>
+        </div>
+        <nav>
+            <a th:href="@{/}" th:classappend="${nav == 'dashboard'} ? 'active'"><span class="ico" aria-hidden="true">▦</span> Panel</a>
+            <a th:href="@{/messages/new}" class="nav-cta"><span class="ico" aria-hidden="true">✎</span> Redactar</a>
+            <a th:href="@{/messages(box='drafts')}" th:classappend="${nav == 'drafts'} ? 'active'"><span class="ico" aria-hidden="true">▤</span> Borradores</a>
+            <a th:href="@{/messages(box='outbox')}" th:classappend="${nav == 'outbox'} ? 'active'"><span class="ico" aria-hidden="true">⇪</span> Bandeja de salida</a>
+            <a th:href="@{/messages(box='sent')}" th:classappend="${nav == 'sent'} ? 'active'"><span class="ico" aria-hidden="true">✓</span> Enviados</a>
+            <a th:href="@{/messages(box='failed')}" th:classappend="${nav == 'failed'} ? 'active'"><span class="ico" aria-hidden="true">!</span> Fallidos</a>
+            <a th:href="@{/contacts}" th:classappend="${nav == 'contacts'} ? 'active'"><span class="ico" aria-hidden="true">☺</span> Contactos</a>
+            <a th:href="@{/templates}" th:classappend="${nav == 'templates'} ? 'active'"><span class="ico" aria-hidden="true">❏</span> Plantillas</a>
+            <div th:if="${isAdmin}" class="nav-section">Administración</div>
+            <a th:if="${isAdmin}" th:href="@{/admin/users}" th:classappend="${nav == 'admin-users'} ? 'active'"><span class="ico" aria-hidden="true">⚉</span> Usuarios</a>
+            <a th:if="${isAdmin}" th:href="@{/admin/settings}" th:classappend="${nav == 'admin-settings'} ? 'active'"><span class="ico" aria-hidden="true">⚙</span> Configuración</a>
+            <a th:if="${isAdmin}" th:href="@{/admin/audit}" th:classappend="${nav == 'admin-audit'} ? 'active'"><span class="ico" aria-hidden="true">≡</span> Auditoría</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/account}" class="user-chip" th:classappend="${nav == 'account'} ? 'active'">
+                <span class="avatar" th:text="${currentUser != null ? #strings.substring(currentUser.displayName,0,1) : '?'}">U</span>
+                <span class="user-meta">
+                    <strong th:text="${currentUser != null ? currentUser.displayName : ''}">Usuario</strong>
+                    <small th:text="${currentUser != null ? currentUser.role.label : ''}">Rol</small>
+                </span>
+            </a>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="btn btn-ghost btn-sm">Cerrar sesión</button>
+            </form>
+        </div>
+    </aside>
+    <div class="main-area">
+        <header class="topbar">
+            <button type="button" class="btn btn-ghost btn-sm menu-toggle" data-toggle="sidebar" aria-controls="sidebar" aria-expanded="false">☰ Menú</button>
+            <div class="topbar-status">
+                <span th:if="${mailConfigured != true}" class="pill pill-danger" title="No hay servidor SMTP configurado">Correo sin configurar</span>
+                <span th:if="${mailConfigured == true and mailReal != true}" class="pill pill-warn" title="Se usa un servidor SMTP local de pruebas">Correo real pendiente de configuración</span>
+                <span th:if="${mailConfigured == true and mailReal == true}" class="pill pill-ok">Correo configurado</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" data-toggle="theme" aria-label="Cambiar tema">◐ Tema</button>
+        </header>
+        <main id="contenido" class="content" tabindex="-1">
+            <div th:replace="~{fragments/flash :: flash}"></div>
+            <div th:replace="${content}"></div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

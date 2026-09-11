@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app :: layout(~{::title}, ~{::article}, 'templates')}">
+<head><title>Plantilla · MailDesk Pro</title></head>
+<body>
+<article th:with="tid=${template.id != null ? template.id : templateId}">
+    <div class="page-head">
+        <h1 th:text="${tid == null} ? 'Nueva plantilla' : 'Editar plantilla'">Plantilla</h1>
+    </div>
+    <div class="compose-layout">
+        <form method="post" th:action="${tid == null} ? @{/templates} : @{/templates/{id}(id=${tid})}" class="card" novalidate>
+            <div class="field">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="name" th:value="${template.name}" required maxlength="120" autofocus>
+            </div>
+            <div class="field">
+                <label for="subject">Asunto</label>
+                <input type="text" id="subject" name="subject" th:value="${template.subject}" required maxlength="500" placeholder="Hola {{nombre}}, novedades de {{negocio}}">
+            </div>
+            <div class="field">
+                <label for="editor">Cuerpo (HTML)</label>
+                <div class="editor-toolbar" role="toolbar" aria-label="Formato">
+                    <button type="button" data-cmd="bold"><strong>B</strong></button>
+                    <button type="button" data-cmd="italic"><em>I</em></button>
+                    <button type="button" data-cmd="underline"><u>U</u></button>
+                    <button type="button" data-cmd="insertUnorderedList">• Lista</button>
+                    <button type="button" data-cmd="formatBlock" data-value="h2">Título</button>
+                    <button type="button" data-cmd="formatBlock" data-value="p">Párrafo</button>
+                    <button type="button" data-cmd="createLink">Enlace</button>
+                    <button type="button" data-cmd="removeFormat">Limpiar</button>
+                </div>
+                <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Cuerpo de la plantilla" th:utext="${template.bodyHtml}"></div>
+                <input type="hidden" id="body" name="bodyHtml" th:value="${template.bodyHtml}">
+                <input type="radio" name="contentType" value="HTML" checked hidden aria-hidden="true">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar plantilla</button>
+                <a th:href="@{/templates}" class="btn btn-ghost">Volver</a>
+            </div>
+        </form>
+        <aside>
+            <section class="card">
+                <h3>Variables permitidas</h3>
+                <p class="muted small">Se sustituyen por texto; nunca se ejecuta código. Las variables desconocidas quedan vacías.</p>
+                <div class="var-chips">
+                    <code th:each="v : ${variables}" th:text="'{{' + ${v} + '}}'">{{nombre}}</code>
+                </div>
+                <dl class="meta mt small">
+                    <dt>nombre / email / empresa</dt><dd>Datos del contacto elegido al redactar</dd>
+                    <dt>negocio</dt><dd>Nombre comercial configurado</dd>
+                    <dt>remitente</dt><dd>Tu nombre</dd>
+                    <dt>fecha</dt><dd>Fecha del día</dd>
+                </dl>
+            </section>
+            <section class="card" th:if="${preview != null}">
+                <h3>Vista previa con datos de ejemplo</h3>
+                <p class="small"><strong>Asunto:</strong> <span th:text="${preview.subject}">asunto</span></p>
+                <iframe class="preview-frame" sandbox="" title="Vista previa"
+                        th:srcdoc="${'<!doctype html><meta charset=utf-8><body style=font-family:sans-serif;padding:8px>' + preview.bodyHtml + '</body>'}"></iframe>
+            </section>
+        </aside>
+    </div>
+</article>
+</body>
+</html>
